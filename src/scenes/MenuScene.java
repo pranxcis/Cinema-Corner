@@ -1,10 +1,11 @@
 package scenes;
 
+import core.SceneManager;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public class MenuScene {
+public class MenuScene extends Scene {
 
     private static final int WIDTH = 1280;
     private static final int HEIGHT = 960;
@@ -12,11 +13,14 @@ public class MenuScene {
 
     private JFrame gameWindow;
     private JPanel panel;
-    private Runnable onFinish;
 
-    public MenuScene(JFrame gameWindow, Runnable onFinish) {
-        this.gameWindow = gameWindow;
-        this.onFinish = onFinish;
+    public MenuScene() {
+        // Empty constructor, window will be passed in showScene()
+    }
+
+    @Override
+    public void showScene(JFrame window) {
+        this.gameWindow = window;
 
         panel = new JPanel() {
             @Override
@@ -30,18 +34,18 @@ public class MenuScene {
         panel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                finish();
+                // Example: next scene
+                System.out.println("Menu clicked!");
             }
         });
 
         panel.setFocusable(true);
         panel.requestFocusInWindow();
-    }
 
-    public void showScene() {
-        gameWindow.setContentPane(panel);
-        gameWindow.revalidate();
-        gameWindow.repaint();
+        window.setContentPane(panel);
+        window.revalidate();
+        window.repaint();
+
         startFadeIn();
     }
 
@@ -66,9 +70,10 @@ public class MenuScene {
         timer.start();
     }
 
-    private void finish() {
-        if (onFinish != null) {
-            onFinish.run();
+    @Override
+    public void hideScene() {
+        if (gameWindow != null && panel != null) {
+            gameWindow.getContentPane().remove(panel);
         }
     }
 }

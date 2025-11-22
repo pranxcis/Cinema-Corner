@@ -1,73 +1,149 @@
 package scenes;
 
+import core.SceneManager;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
-public class IntroScene {
+public class IntroScene extends Scene {
 
-    private static final int WIDTH = 1280;
-    private static final int HEIGHT = 960;
-    private float alpha = 0f;
-
-    private JFrame gameWindow;
+    private JFrame window;
     private JPanel panel;
-    private Runnable onFinish;
 
-    public IntroScene(JFrame gameWindow, Runnable onFinish) {
-        this.gameWindow = gameWindow;
-        this.onFinish = onFinish;
+    private float alpha = 0f;
+    private Timer fadeTimer;
+
+    private boolean fadingIn = true;
+    private boolean forceFadeOut = false;
+
+    // Slower fade speed
+    private final int FADE_DELAY = 70;      // ms per step (slower)
+    private final float FADE_STEP = 0.03f;  // slower fade
+
+    private final int DISPLAY_TIME = 2000;  // stay visible before fade-out
+
+    private Image introImage;
+
+    @Override
+    public void showScene(JFrame window) {
+        this.window = window;
+
+        introImage = new ImageIcon("assets/images/intro.png").getImage();
 
         panel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                draw((Graphics2D) g);
+                Graphics2D g2d = (Graphics2D) g.create();
+
+                // Black background
+                g2d.setColor(Color.BLACK);
+                g2d.fillRect(0, 0, getWidth(), getHeight());
+
+                // Fade image
+                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+
+                int x = (getWidth() - introImage.getWidth(null)) / 2;
+                int y = (getHeight() - introImage.getHeight(null)) / 2;
+
+                g2d.drawImage(introImage, x, y, null);
+                g2d.dispose();
             }
         };
-        panel.setBackground(Color.BLACK);
 
+        // Clicking forces fade-out immediately
         panel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                finish();
+                forceFadeOut = true;
+                startFadeOut();
             }
         });
 
-        panel.setFocusable(true);
-        panel.requestFocusInWindow();
-    }
+        window.setContentPane(panel);
+        window.revalidate();
+        window.setVisible(true);
 
-    public void showScene() {
-        gameWindow.setContentPane(panel);
-        gameWindow.setVisible(true);
         startFadeIn();
     }
 
-    private void draw(Graphics2D g2d) {
-        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
-        g2d.setColor(Color.WHITE);
-        g2d.setFont(new Font("Arial", Font.BOLD, 72));
-        String text = "INTRO SCENE";
-        int textWidth = g2d.getFontMetrics().stringWidth(text);
-        g2d.drawString(text, (WIDTH - textWidth) / 2, HEIGHT / 2);
-    }
-
+    // ============================
+    // FADE IN
+    // ============================
     private void startFadeIn() {
-        Timer timer = new Timer(30, e -> {
-            alpha += 0.02f;
+        fadingIn = true;
+        forceFadeOut = false;
+
+        stopFadeTimer();
+
+        fadeTimer = new Timer(FADE_DELAY, e -> {
+            alpha += FADE_STEP;
+
             if (alpha >= 1f) {
                 alpha = 1f;
-                ((Timer) e.getSource()).stop();
+                stopFadeTimer();
+
+                // Wait, then fade out—only if not clicked early
+                new Timer(DISPLAY_TIME, ev -> {
+                    if (!forceFadeOut) {
+                        startFadeOut();
+                    }
+                }).start();
             }
+
             panel.repaint();
         });
-        timer.start();
+
+        fadeTimer.start();
     }
 
-    private void finish() {
-        if (onFinish != null) {
-            onFinish.run();
+    // ============================
+    // FADE OUT
+    // ============================
+    private void startFadeOut() {
+        if (!fadingIn && fadeTimer != null) return; // already fading out
+
+        fadingIn = false;
+        stopFadeTimer();
+
+        fadeTimer = new Timer(FADE_DELAY, e -> {
+            alpha -= FADE_STEP;
+
+            if (alpha <= 0f) {
+                alpha = 0f;
+                stopFadeTimer();
+                goToNextScene();
+            }
+
+            panel.repaint();
+        });
+
+        fadeTimer.start();
+    }
+
+    // Safely stop timer
+    private void stopFadeTimer() {
+        if (fadeTimer != null) {
+            fadeTimer.stop();
+            fadeTimer = null;
+        }
+    }
+
+    // ============================
+    // TRANSITION
+    // ============================
+    private void goToNextScene() {
+        System.out.println("Intro finished! Switching to MenuScene...");
+        SceneManager.setScene(new MenuScene());
+    }
+
+    @Override
+    public void hideScene() {
+        stopFadeTimer();
+        if (window != null) {
+            window.getContentPane().remove(panel);
         }
     }
 }
