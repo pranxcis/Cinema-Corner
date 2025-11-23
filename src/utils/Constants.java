@@ -2,21 +2,21 @@ package utils;
 
 public class Constants {
     // Window dimensions
-    public static final int WINDOW_WIDTH = 800;
-    public static final int WINDOW_HEIGHT = 600;
+    public static final int WINDOW_WIDTH = 1280;
+    public static final int WINDOW_HEIGHT = 960;
 
     // Game settings
     public static final int TARGET_FPS = 60;
     public static final long FRAME_TIME = 1000 / TARGET_FPS;
 
     // Player settings
-    public static final int PLAYER_WIDTH = 64;
-    public static final int PLAYER_HEIGHT = 64;
+    public static final int PLAYER_WIDTH = 120;
+    public static final int PLAYER_HEIGHT = 120;
     public static final int PLAYER_SPEED = 3;
 
     // Machine settings
-    public static final int MACHINE_WIDTH = 100;
-    public static final int MACHINE_HEIGHT = 120;
+    public static final int MACHINE_WIDTH = 120;
+    public static final int MACHINE_HEIGHT = 140;
 
     // Animation settings
     public static final int ANIMATION_SPEED = 100; // milliseconds per frame

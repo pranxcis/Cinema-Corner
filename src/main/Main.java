@@ -4,8 +4,8 @@ import core.*;
 import javax.swing.*;
 
 public class Main extends JFrame {
-    private static final int WINDOW_WIDTH = 800;
-    private static final int WINDOW_HEIGHT = 600;
+    private static final int WINDOW_WIDTH = 1280;
+    private static final int WINDOW_HEIGHT = 960;
 
     private GameLoop gameLoop;
     private SceneManager sceneManager;
@@ -13,11 +13,12 @@ public class Main extends JFrame {
     private GameRenderer renderer;
 
     public Main() {
-        setTitle("CinemaCorner");
+        setTitle("Cinema Corner");
         setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
         setLocationRelativeTo(null);
+        setUndecorated(true);
 
         // Initialize core components
         AssetLoader.initialize();

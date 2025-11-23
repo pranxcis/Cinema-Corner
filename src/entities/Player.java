@@ -23,34 +23,37 @@ public class Player {
 
     public void update(long deltaTime, InputHandler input) {
         boolean moved = false;
-        String newDirection = currentDirection;
+        String newDirection = "idle"; // Default to idle
 
-        if (input.isWPressed()) {
+        // Check for interact (Space key held)
+        if (input.isSpacePressed()) {
+            newDirection = "interact";
+        }
+        // Check for movement (only if not interacting)
+        else if (input.isWPressed()) {
             y -= speed;
             newDirection = "up";
             moved = true;
         }
-        if (input.isSPressed()) {
+        else if (input.isSPressed()) {
             y += speed;
             newDirection = "down";
             moved = true;
         }
-        if (input.isAPressed()) {
+        else if (input.isAPressed()) {
             x -= speed;
             newDirection = "left";
             moved = true;
         }
-        if (input.isDPressed()) {
+        else if (input.isDPressed()) {
             x += speed;
             newDirection = "right";
             moved = true;
         }
 
-        if (moved && !newDirection.equals(currentDirection)) {
+        // Update sprite if direction changed
+        if (!newDirection.equals(currentDirection)) {
             currentDirection = newDirection;
-            updateSprite();
-        } else if (!moved && !currentDirection.equals("idle")) {
-            currentDirection = "idle";
             updateSprite();
         }
     }
@@ -84,6 +87,7 @@ public class Player {
             case "down": directionName = "Down"; break;
             case "left": directionName = "Left"; break;
             case "right": directionName = "Right"; break;
+            case "interact": directionName = "Interact"; break;
         }
 
         String spritePath = basePath + itemFolder + directionName;

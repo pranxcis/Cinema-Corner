@@ -18,7 +18,7 @@ public class IntroScene extends Scene {
 
     @Override
     public void init() {
-        introImage = AssetLoader.loadImage("images/Intro/intro.png");
+        introImage = AssetLoader.loadImage("images/Intro.png");
         alpha = 0;
         fadingIn = true;
         displayTimer = 0;
@@ -71,9 +71,5 @@ public class IntroScene extends Scene {
 
         g.setComposite(oldComposite);
 
-        // Draw skip hint
-        g.setColor(new Color(255, 255, 255, 150));
-        g.setFont(AssetLoader.getFont("default"));
-        g.drawString("Press SPACE to skip", 20, Constants.WINDOW_HEIGHT - 30);
     }
 }
