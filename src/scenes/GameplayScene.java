@@ -1,55 +1,36 @@
 package scenes;
 
-import javax.swing.*;
+import core.*;
+import entities.Player;
+import utils.Constants;
 import java.awt.*;
 
-public class GameplayScene {
+public class GameplayScene extends Scene {
+    private Player player;
 
-    private static final int WIDTH = 1280;
-    private static final int HEIGHT = 960;
-    private float alpha = 0f;
-
-    private JFrame gameWindow;
-    private JPanel panel;
-
-    public GameplayScene(JFrame gameWindow) {
-        this.gameWindow = gameWindow;
-
-        panel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                draw((Graphics2D) g);
-            }
-        };
-        panel.setBackground(Color.BLUE);
+    public GameplayScene(SceneManager sceneManager) {
+        super(sceneManager);
     }
 
-    public void showScene() {
-        gameWindow.setContentPane(panel);
-        gameWindow.revalidate();
-        gameWindow.repaint();
-        startFadeIn();
+    @Override
+    public void init() {
+        player = new Player(Constants.WINDOW_WIDTH / 2, Constants.WINDOW_HEIGHT / 2);
     }
 
-    private void draw(Graphics2D g2d) {
-        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
-        g2d.setColor(Color.WHITE);
-        g2d.setFont(new Font("Arial", Font.BOLD, 72));
-        String text = "GAMEPLAY SCENE";
-        int textWidth = g2d.getFontMetrics().stringWidth(text);
-        g2d.drawString(text, (WIDTH - textWidth) / 2, HEIGHT / 2);
+    @Override
+    public void update(long deltaTime, InputHandler input) {
+        player.update(deltaTime, input);
     }
 
-    private void startFadeIn() {
-        Timer timer = new Timer(30, e -> {
-            alpha += 0.02f;
-            if (alpha >= 1f) {
-                alpha = 1f;
-                ((Timer) e.getSource()).stop();
-            }
-            panel.repaint();
-        });
-        timer.start();
+    @Override
+    public void render(Graphics2D g) {
+        g.setColor(new Color(50, 50, 70));
+        g.fillRect(0, 0, Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT);
+
+        player.render(g);
+
+        g.setColor(Color.WHITE);
+        g.setFont(AssetLoader.getFont("default"));
+        g.drawString("Gameplay Scene - Coming Soon", 20, 30);
     }
 }

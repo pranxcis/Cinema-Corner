@@ -1,27 +1,52 @@
 package core;
 
-import javax.swing.JFrame;
-import scenes.Scene; // We'll define an abstract Scene class
+import scenes.*;
+import utils.Constants;
 
 public class SceneManager {
-    private static JFrame gameWindow;
-    private static Scene currentScene;
+    private Scene currentScene;
+    private String currentSceneName;
 
-    // Initialize with the game window
-    public static void init(JFrame window) {
-        gameWindow = window;
+    public SceneManager() {
+        switchScene(Constants.SCENE_INTRO);
     }
 
-    // Switch to a new scene
-    public static void setScene(Scene newScene) {
-        if (currentScene != null) {
-            currentScene.hideScene(); // Cleanup current scene
+    public void switchScene(String sceneName) {
+        currentSceneName = sceneName;
+
+        switch (sceneName) {
+            case Constants.SCENE_INTRO:
+                currentScene = new IntroScene(this);
+                break;
+            case Constants.SCENE_MENU:
+                currentScene = new MenuScene(this);
+                break;
+            case Constants.SCENE_BUFFER:
+                currentScene = new BufferScene(this);
+                break;
+            case Constants.SCENE_LOBBY:
+                currentScene = new LobbyScene(this);
+                break;
+            case Constants.SCENE_GAMEPLAY:
+                currentScene = new GameplayScene(this);
+                break;
+            case Constants.SCENE_LEVEL_CLEAR:
+                currentScene = new LevelClearScene(this);
+                break;
+            default:
+                currentScene = new MenuScene(this);
         }
-        currentScene = newScene;
-        currentScene.showScene(gameWindow); // Show new scene
+
+        if (currentScene != null) {
+            currentScene.init();
+        }
     }
 
-    public static Scene getCurrentScene() {
+    public Scene getCurrentScene() {
         return currentScene;
+    }
+
+    public String getCurrentSceneName() {
+        return currentSceneName;
     }
 }

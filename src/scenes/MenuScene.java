@@ -1,79 +1,109 @@
 package scenes;
 
-import core.SceneManager;
-import javax.swing.*;
+import core.*;
+import entities.Player;
+import utils.Constants;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.awt.event.KeyEvent;
 
 public class MenuScene extends Scene {
+    private BufferedImage backgroundImage;
+    private Player player;
 
-    private static final int WIDTH = 1280;
-    private static final int HEIGHT = 960;
-    private float alpha = 0f;
+    // Menu options
+    private Rectangle playButton;
+    private Rectangle exitButton;
+    private boolean onPlayButton = false;
 
-    private JFrame gameWindow;
-    private JPanel panel;
-
-    public MenuScene() {
-        // Empty constructor, window will be passed in showScene()
+    public MenuScene(SceneManager sceneManager) {
+        super(sceneManager);
     }
 
     @Override
-    public void showScene(JFrame window) {
-        this.gameWindow = window;
+    public void init() {
+        backgroundImage = AssetLoader.loadImage("images/MenuScene/menu_bg.png");
 
-        panel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                draw((Graphics2D) g);
-            }
-        };
-        panel.setBackground(Color.DARK_GRAY);
+        // Initialize player at starting position
+        player = new Player(100, 300);
 
-        panel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                // Example: next scene
-                System.out.println("Menu clicked!");
-            }
-        });
-
-        panel.setFocusable(true);
-        panel.requestFocusInWindow();
-
-        window.setContentPane(panel);
-        window.revalidate();
-        window.repaint();
-
-        startFadeIn();
-    }
-
-    private void draw(Graphics2D g2d) {
-        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
-        g2d.setColor(Color.WHITE);
-        g2d.setFont(new Font("Arial", Font.BOLD, 72));
-        String text = "MENU SCENE";
-        int textWidth = g2d.getFontMetrics().stringWidth(text);
-        g2d.drawString(text, (WIDTH - textWidth) / 2, HEIGHT / 2);
-    }
-
-    private void startFadeIn() {
-        Timer timer = new Timer(30, e -> {
-            alpha += 0.02f;
-            if (alpha >= 1f) {
-                alpha = 1f;
-                ((Timer) e.getSource()).stop();
-            }
-            panel.repaint();
-        });
-        timer.start();
+        // Define button areas
+        playButton = new Rectangle(300, 250, 200, 60);
+        exitButton = new Rectangle(300, 350, 200, 60);
     }
 
     @Override
-    public void hideScene() {
-        if (gameWindow != null && panel != null) {
-            gameWindow.getContentPane().remove(panel);
+    public void update(long deltaTime, InputHandler input) {
+        // Update player movement
+        player.update(deltaTime, input);
+
+        // Check if player is near buttons
+        Rectangle playerBounds = player.getBounds();
+        onPlayButton = playerBounds.intersects(playButton);
+
+        // Check for interaction
+        if (input.isSpaceJustPressed()) {
+            if (onPlayButton || playerBounds.intersects(playButton)) {
+                sceneManager.switchScene(Constants.SCENE_BUFFER);
+            } else if (playerBounds.intersects(exitButton)) {
+                System.exit(0);
+            }
         }
+
+        // Keep player within bounds
+        if (player.getX() < 0) player.setX(0);
+        if (player.getY() < 0) player.setY(0);
+        if (player.getX() > Constants.WINDOW_WIDTH - Constants.PLAYER_WIDTH) {
+            player.setX(Constants.WINDOW_WIDTH - Constants.PLAYER_WIDTH);
+        }
+        if (player.getY() > Constants.WINDOW_HEIGHT - Constants.PLAYER_HEIGHT) {
+            player.setY(Constants.WINDOW_HEIGHT - Constants.PLAYER_HEIGHT);
+        }
+    }
+
+    @Override
+    public void render(Graphics2D g) {
+        // Draw background
+        g.setColor(new Color(20, 20, 40));
+        g.fillRect(0, 0, Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT);
+
+        // Draw title
+        g.setFont(AssetLoader.getFont("title"));
+        g.setColor(Color.YELLOW);
+        String title = "CinemaCorner";
+        FontMetrics fm = g.getFontMetrics();
+        int titleX = (Constants.WINDOW_WIDTH - fm.stringWidth(title)) / 2;
+        g.drawString(title, titleX, 150);
+
+        // Draw buttons
+        g.setFont(AssetLoader.getFont("default"));
+
+        // Play button
+        g.setColor(onPlayButton ? new Color(100, 200, 100) : new Color(70, 150, 70));
+        g.fillRect(playButton.x, playButton.y, playButton.width, playButton.height);
+        g.setColor(Color.BLACK);
+        g.drawRect(playButton.x, playButton.y, playButton.width, playButton.height);
+        g.setColor(Color.WHITE);
+        String playText = "PLAY";
+        int playTextX = playButton.x + (playButton.width - g.getFontMetrics().stringWidth(playText)) / 2;
+        g.drawString(playText, playTextX, playButton.y + 38);
+
+        // Exit button
+        g.setColor(new Color(150, 70, 70));
+        g.fillRect(exitButton.x, exitButton.y, exitButton.width, exitButton.height);
+        g.setColor(Color.BLACK);
+        g.drawRect(exitButton.x, exitButton.y, exitButton.width, exitButton.height);
+        g.setColor(Color.WHITE);
+        String exitText = "EXIT";
+        int exitTextX = exitButton.x + (exitButton.width - g.getFontMetrics().stringWidth(exitText)) / 2;
+        g.drawString(exitText, exitTextX, exitButton.y + 38);
+
+        // Draw player
+        player.render(g);
+
+        // Draw instructions
+        g.setFont(new Font("Arial", Font.PLAIN, 16));
+        g.setColor(Color.WHITE);
+        g.drawString("Use WASD to move, SPACE to select", 20, Constants.WINDOW_HEIGHT - 30);
     }
 }
