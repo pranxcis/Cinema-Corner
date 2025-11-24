@@ -15,8 +15,8 @@ public class Constants {
     public static final int PLAYER_SPEED = 3;
 
     // Machine settings
-    public static final int MACHINE_WIDTH = 120;
-    public static final int MACHINE_HEIGHT = 140;
+    public static final int MACHINE_WIDTH = 100;
+    public static final int MACHINE_HEIGHT = 120;
 
     // Animation settings
     public static final int ANIMATION_SPEED = 100; // milliseconds per frame
@@ -46,4 +46,11 @@ public class Constants {
     public static final int MACHINE_REFILL_2 = 2;
     public static final int MACHINE_FULL = 3;
     public static final int MACHINE_LESS_FULL = 4;
+
+    // Customer states
+    public static final int CUSTOMER_WAITING = 0;
+    public static final int CUSTOMER_BEING_SERVED = 1;
+    public static final int CUSTOMER_SATISFIED = 2;
+    public static final int CUSTOMER_ANGRY = 3;
+    public static final int CUSTOMER_LEAVING = 4;
 }

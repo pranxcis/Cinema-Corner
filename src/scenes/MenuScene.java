@@ -5,21 +5,23 @@ import entities.Player;
 import utils.Constants;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.event.KeyEvent;
 
 public class MenuScene extends Scene {
     private BufferedImage backgroundImage;
     private Player player;
 
-    // Wall boundaries
+    // Wall boundaries (as requested by the user, these restrict vertical movement)
     private static final int TOP_WALL_Y = 348;
     private static final int BOTTOM_WALL_Y = 636;
 
-    // Door areas
-    private Rectangle exitDoor;
-    private Rectangle decoyDoor;
+    // Menu options
+    private Rectangle playButton;
+    private Rectangle exitButton;
 
-    // Play area trigger
-    private static final int PLAY_AREA_X = 1160;
+    // Tracks if the player is currently intersecting a button area
+    private boolean isIntersectingPlay = false;
+    private boolean isIntersectingExit = false;
 
     public MenuScene(SceneManager sceneManager) {
         super(sceneManager);
@@ -30,20 +32,19 @@ public class MenuScene extends Scene {
         backgroundImage = AssetLoader.loadImage("images/MenuScene.png");
 
         // Initialize player at starting position
-        player = new Player(33, 490);
+        player = new Player(100, 300);
 
-        // Define door hitboxes
-        exitDoor = new Rectangle(310, 333, 80, 100);
-        decoyDoor = new Rectangle(590, 342, 100, 100);
+        // Define button areas (used for player interaction)
+        playButton = new Rectangle(300, 500, 200, 60);
+        exitButton = new Rectangle(300, 400, 200, 60);
     }
 
     @Override
     public void update(long deltaTime, InputHandler input) {
-
         // Update player movement
         player.update(deltaTime, input);
 
-        // Apply wall boundaries
+        // Apply explicit top and bottom wall boundaries
         if (player.getY() < TOP_WALL_Y) {
             player.setY(TOP_WALL_Y);
         }
@@ -59,23 +60,19 @@ public class MenuScene extends Scene {
             player.setX(Constants.WINDOW_WIDTH - Constants.PLAYER_WIDTH);
         }
 
-        // Check if player reached play area (right edge)
-        if (player.getX() >= PLAY_AREA_X - Constants.PLAYER_WIDTH) {
-            sceneManager.switchScene(Constants.SCENE_BUFFER);
-            return;
-        }
-
-        // Check for door interactions
+        // Now get the updated bounds AFTER applying wall clamping
         Rectangle playerBounds = player.getBounds();
 
-        if (input.isSpaceJustPressed()) {
-            // Exit door - quit game
-            if (playerBounds.intersects(exitDoor)) {
+        // Update intersection status
+        isIntersectingPlay = playerBounds.intersects(playButton);
+        isIntersectingExit = playerBounds.intersects(exitButton);
+
+        // Check for interaction
+        if (input.isSpacePressed()) {
+            if (isIntersectingPlay) {
+                sceneManager.switchScene(Constants.SCENE_BUFFER);
+            } else if (isIntersectingExit) {
                 System.exit(0);
-            }
-            // Decoy door - does nothing (locked)
-            else if (playerBounds.intersects(decoyDoor)) {
-                System.out.println("This door is locked!");
             }
         }
     }
@@ -91,34 +88,28 @@ public class MenuScene extends Scene {
             g.drawImage(backgroundImage, 0, 0, Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT, null);
         }
 
+        // Draw menu buttons
+        Font buttonFont = new Font("Arial", Font.BOLD, 28);
+        g.setFont(buttonFont);
+
+        // Play Button
+        g.setColor(isIntersectingPlay ? new Color(100, 200, 255) : new Color(50, 150, 200));
+        g.fillRect(playButton.x, playButton.y, playButton.width, playButton.height);
+        g.setColor(Color.WHITE);
+        g.drawString("PLAY GAME", playButton.x + 20, playButton.y + 40);
+
+        // Exit Button
+        g.setColor(isIntersectingExit ? new Color(255, 100, 100) : new Color(200, 50, 50));
+        g.fillRect(exitButton.x, exitButton.y, exitButton.width, exitButton.height);
+        g.setColor(Color.WHITE);
+        g.drawString("EXIT", exitButton.x + 65, exitButton.y + 40);
+
         // Draw player
         player.render(g);
-
-        // Draw debug boundaries (optional - remove in production)
-        //g.setColor(new Color(255, 0, 0, 150));
-        //g.drawLine(0, TOP_WALL_Y, Constants.WINDOW_WIDTH, TOP_WALL_Y); // Top wall
-        //g.drawLine(0, BOTTOM_WALL_Y, Constants.WINDOW_WIDTH, BOTTOM_WALL_Y); // Bottom wall
-
-        // Draw door hitboxes (optional - remove in production)
-        //g.setColor(new Color(0, 255, 0, 100));
-        //g.fillRect(exitDoor.x, exitDoor.y, exitDoor.width, exitDoor.height);
-        //g.setColor(Color.WHITE);
-        //g.drawString("EXIT", exitDoor.x + 15, exitDoor.y + 50);
-
-        //g.setColor(new Color(255, 255, 0, 100));
-        //g.fillRect(decoyDoor.x, decoyDoor.y, decoyDoor.width, decoyDoor.height);
-        //g.setColor(Color.WHITE);
-        //g.drawString("LOCKED", decoyDoor.x + 5, decoyDoor.y + 50);
-
-        // Draw play area indicator (optional - remove in production)
-        //g.setColor(new Color(0, 0, 255, 150));
-        //g.drawLine(PLAY_AREA_X, 0, PLAY_AREA_X, Constants.WINDOW_HEIGHT);
-        //g.setFont(new Font("Arial", Font.BOLD, 20));
-        //g.drawString("PLAY →", PLAY_AREA_X - 70, 300);
 
         // Draw instructions
         g.setFont(new Font("Arial", Font.PLAIN, 16));
         g.setColor(Color.WHITE);
-        g.drawString("WASD: Move | SPACE: Interact  | Go right to Play", 20, Constants.WINDOW_HEIGHT - 30);
+        g.drawString("WASD: Move | SPACE: Interact with menu option", 20, Constants.WINDOW_HEIGHT - 30);
     }
 }

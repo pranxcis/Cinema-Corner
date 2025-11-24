@@ -10,6 +10,7 @@ public class BufferScene extends Scene {
     private int alpha = 0;
     private boolean fadingIn = true;
     private long displayTimer = 0;
+    private String nextScene;
 
     public BufferScene(SceneManager sceneManager) {
         super(sceneManager);
@@ -17,10 +18,24 @@ public class BufferScene extends Scene {
 
     @Override
     public void init() {
-        bufferImage = AssetLoader.loadImage("images/BufferScene/loading.png");
+        bufferImage = AssetLoader.loadImage("images/BufferScene.png");
         alpha = 0;
         fadingIn = true;
         displayTimer = 0;
+
+        // Determine next scene based on current scene
+        String current = sceneManager.getCurrentSceneName();
+        if (current.equals(Constants.SCENE_LOBBY) || current.equals(Constants.SCENE_MENU)) {
+            nextScene = Constants.SCENE_GAMEPLAY;
+        } else if (current.equals(Constants.SCENE_GAMEPLAY)) {
+            nextScene = "gameplay2";
+        } else if (current.equals("gameplay2")) {
+            nextScene = "gameplay3";
+        } else if (current.equals("gameplay3")) {
+            nextScene = "end";
+        } else {
+            nextScene = Constants.SCENE_LOBBY;
+        }
     }
 
     @Override
@@ -39,7 +54,7 @@ public class BufferScene extends Scene {
             alpha -= Constants.FADE_SPEED;
             if (alpha <= 0) {
                 alpha = 0;
-                sceneManager.switchScene(Constants.SCENE_LOBBY);
+                sceneManager.switchScene(nextScene);
             }
         }
     }

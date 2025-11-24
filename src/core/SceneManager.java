@@ -28,10 +28,10 @@ public class SceneManager {
                 currentScene = new LobbyScene(this);
                 break;
             case Constants.SCENE_GAMEPLAY:
-                currentScene = new GameplayScene(this);
+                currentScene = new Gameplay1(this);
                 break;
             case Constants.SCENE_LEVEL_CLEAR:
-                currentScene = new LevelClearScene(this);
+                currentScene = new EndScene(this);
                 break;
             default:
                 currentScene = new MenuScene(this);

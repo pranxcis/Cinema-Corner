@@ -5,15 +5,23 @@ import java.awt.event.KeyEvent;
 
 public class InputHandler extends KeyAdapter {
     private boolean[] keys = new boolean[256];
-    private boolean spacePressed = false;
-    private boolean spaceJustPressed = false;
+    private boolean eJustPressed = false;
+    private boolean tJustPressed = false;
+    private boolean escJustPressed = false;
 
     @Override
     public void keyPressed(KeyEvent e) {
         int code = e.getKeyCode();
         if (code < keys.length) {
-            if (code == KeyEvent.VK_SPACE && !keys[code]) {
-                spaceJustPressed = true;
+            // Track "just pressed" for action keys
+            if (code == KeyEvent.VK_E && !keys[code]) {
+                eJustPressed = true;
+            }
+            if (code == KeyEvent.VK_T && !keys[code]) {
+                tJustPressed = true;
+            }
+            if (code == KeyEvent.VK_ESCAPE && !keys[code]) {
+                escJustPressed = true;
             }
             keys[code] = true;
         }
@@ -52,8 +60,37 @@ public class InputHandler extends KeyAdapter {
     }
 
     public boolean isSpaceJustPressed() {
-        boolean result = spaceJustPressed;
-        spaceJustPressed = false;
+        // For backward compatibility
+        return isEJustPressed();
+    }
+
+    public boolean isEPressed() {
+        return isKeyPressed(KeyEvent.VK_E);
+    }
+
+    public boolean isEJustPressed() {
+        boolean result = eJustPressed;
+        eJustPressed = false;
+        return result;
+    }
+
+    public boolean isTPressed() {
+        return isKeyPressed(KeyEvent.VK_T);
+    }
+
+    public boolean isTJustPressed() {
+        boolean result = tJustPressed;
+        tJustPressed = false;
+        return result;
+    }
+
+    public boolean isEscPressed() {
+        return isKeyPressed(KeyEvent.VK_ESCAPE);
+    }
+
+    public boolean isEscJustPressed() {
+        boolean result = escJustPressed;
+        escJustPressed = false;
         return result;
     }
 
@@ -61,6 +98,8 @@ public class InputHandler extends KeyAdapter {
         for (int i = 0; i < keys.length; i++) {
             keys[i] = false;
         }
-        spaceJustPressed = false;
+        eJustPressed = false;
+        tJustPressed = false;
+        escJustPressed = false;
     }
 }
