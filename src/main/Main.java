@@ -20,22 +20,18 @@ public class Main extends JFrame {
         setLocationRelativeTo(null);
         setUndecorated(true);
 
-        // Initialize core components
         AssetLoader.initialize();
         sceneManager = new SceneManager();
         inputHandler = new InputHandler();
         renderer = new GameRenderer(WINDOW_WIDTH, WINDOW_HEIGHT);
 
-        // Add renderer panel and input handler
         add(renderer);
         addKeyListener(inputHandler);
 
-        // Initialize game loop
         gameLoop = new GameLoop(sceneManager, inputHandler, renderer);
 
         setVisible(true);
 
-        // Start the game
         gameLoop.start();
     }
 
