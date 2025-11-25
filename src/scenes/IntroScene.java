@@ -1,6 +1,7 @@
 package scenes;
 
 import core.*;
+import systems.AudioSystem;
 import utils.Constants;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -18,17 +19,20 @@ public class IntroScene extends Scene {
 
     @Override
     public void init() {
-        introImage = AssetLoader.loadImage("images/Intro.png");
+        introImage = AssetLoader.loadImage("images/IntroScene.png");
         alpha = 0;
         fadingIn = true;
         displayTimer = 0;
         skipRequested = false;
+
+        // Play intro sound
+        AudioSystem.getInstance().playIntro();
     }
 
     @Override
     public void update(long deltaTime, InputHandler input) {
         // Check for skip
-        if (input.isSpaceJustPressed()) {
+        if (input.isSpacePressed()) {
             skipRequested = true;
         }
 
@@ -58,9 +62,6 @@ public class IntroScene extends Scene {
 
     @Override
     public void render(Graphics2D g) {
-        g.setColor(Color.BLACK);
-        g.fillRect(0, 0, Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT);
-
         // Draw intro image with alpha
         Composite oldComposite = g.getComposite();
         g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha / 255f));
@@ -70,6 +71,5 @@ public class IntroScene extends Scene {
         g.drawImage(introImage, x, y, null);
 
         g.setComposite(oldComposite);
-
     }
 }

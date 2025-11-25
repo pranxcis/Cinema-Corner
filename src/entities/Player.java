@@ -100,8 +100,8 @@ public class Player {
         }
 
         // Debug: draw bounds
-        g.setColor(new Color(255, 0, 0, 100));
-        g.drawRect(x, y, width, height);
+        //g.setColor(new Color(255, 0, 0, 100));
+        //g.drawRect(x, y, width, height);
     }
 
     public Rectangle getBounds() {

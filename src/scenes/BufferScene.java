@@ -74,9 +74,5 @@ public class BufferScene extends Scene {
 
         g.setComposite(oldComposite);
 
-        // Draw loading text
-        g.setColor(new Color(255, 255, 255, alpha));
-        g.setFont(AssetLoader.getFont("default"));
-        g.drawString("Loading...", Constants.WINDOW_WIDTH / 2 - 50, Constants.WINDOW_HEIGHT - 50);
     }
 }

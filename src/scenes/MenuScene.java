@@ -2,25 +2,27 @@ package scenes;
 
 import core.*;
 import entities.Player;
+import systems.AudioSystem;
 import utils.Constants;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.event.KeyEvent;
 
 public class MenuScene extends Scene {
     private BufferedImage backgroundImage;
     private Player player;
 
-    // Wall boundaries (as requested by the user, these restrict vertical movement)
+    // Wall boundaries (restrict vertical movement)
     private static final int TOP_WALL_Y = 348;
-    private static final int BOTTOM_WALL_Y = 636;
+    private static final int BOTTOM_WALL_Y = 750;
 
     // Menu options
     private Rectangle playButton;
+    private Rectangle elevatorButton;
     private Rectangle exitButton;
 
     // Tracks if the player is currently intersecting a button area
     private boolean isIntersectingPlay = false;
+    private boolean isIntersectingDoor = false;
     private boolean isIntersectingExit = false;
 
     public MenuScene(SceneManager sceneManager) {
@@ -32,15 +34,21 @@ public class MenuScene extends Scene {
         backgroundImage = AssetLoader.loadImage("images/MenuScene.png");
 
         // Initialize player at starting position
-        player = new Player(100, 300);
+        player = new Player(0, 490);
 
         // Define button areas (used for player interaction)
-        playButton = new Rectangle(300, 500, 200, 60);
-        exitButton = new Rectangle(300, 400, 200, 60);
+        playButton = new Rectangle(1160, 500, 30, 400);
+        elevatorButton = new Rectangle(560, 280, 160, 150);
+        exitButton = new Rectangle(295, 280, 100, 150);
+
+        // Play menu music
+        AudioSystem.getInstance().playMenuMusic();
     }
 
     @Override
     public void update(long deltaTime, InputHandler input) {
+        System.out.println(player.getX() + " " + player.getY());
+
         // Update player movement
         player.update(deltaTime, input);
 
@@ -60,17 +68,23 @@ public class MenuScene extends Scene {
             player.setX(Constants.WINDOW_WIDTH - Constants.PLAYER_WIDTH);
         }
 
-        // Now get the updated bounds AFTER applying wall clamping
+        // Get the updated bounds AFTER applying wall clamping
         Rectangle playerBounds = player.getBounds();
 
         // Update intersection status
         isIntersectingPlay = playerBounds.intersects(playButton);
+        isIntersectingDoor = playerBounds.intersects(elevatorButton);
         isIntersectingExit = playerBounds.intersects(exitButton);
 
         // Check for interaction
         if (input.isSpacePressed()) {
+            // Play interact sound
+            AudioSystem.getInstance().playInteract();
+
             if (isIntersectingPlay) {
                 sceneManager.switchScene(Constants.SCENE_BUFFER);
+            } else if (isIntersectingDoor) {
+                System.out.println("Can't Access This Right Now");
             } else if (isIntersectingExit) {
                 System.exit(0);
             }
@@ -79,30 +93,10 @@ public class MenuScene extends Scene {
 
     @Override
     public void render(Graphics2D g) {
-        // Draw background
-        g.setColor(Color.BLACK);
-        g.fillRect(0, 0, Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT);
-
         // Draw background image if loaded
         if (backgroundImage != null) {
             g.drawImage(backgroundImage, 0, 0, Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT, null);
         }
-
-        // Draw menu buttons
-        Font buttonFont = new Font("Arial", Font.BOLD, 28);
-        g.setFont(buttonFont);
-
-        // Play Button
-        g.setColor(isIntersectingPlay ? new Color(100, 200, 255) : new Color(50, 150, 200));
-        g.fillRect(playButton.x, playButton.y, playButton.width, playButton.height);
-        g.setColor(Color.WHITE);
-        g.drawString("PLAY GAME", playButton.x + 20, playButton.y + 40);
-
-        // Exit Button
-        g.setColor(isIntersectingExit ? new Color(255, 100, 100) : new Color(200, 50, 50));
-        g.fillRect(exitButton.x, exitButton.y, exitButton.width, exitButton.height);
-        g.setColor(Color.WHITE);
-        g.drawString("EXIT", exitButton.x + 65, exitButton.y + 40);
 
         // Draw player
         player.render(g);

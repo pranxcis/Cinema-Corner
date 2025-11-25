@@ -2,6 +2,7 @@ package scenes;
 
 import core.*;
 import entities.*;
+import systems.AudioSystem;
 import ui.HUD;
 import utils.Constants;
 import utils.CollisionUtil;
@@ -48,6 +49,9 @@ public class LobbyScene extends Scene {
 
         // Start trigger (specific area on map)
         startTrigger = new Rectangle(650, 400, 100, 100);
+
+        // Play lobby music
+        AudioSystem.getInstance().playLobbyMusic();
     }
 
     @Override
@@ -78,12 +82,14 @@ public class LobbyScene extends Scene {
 
         // Check for interactions
         if (input.isEJustPressed()) {
+            AudioSystem.getInstance().playInteract();
             handleInteractions();
         }
 
         // Check for trash
         if (input.isTJustPressed()) {
             if (player.getItemState() != Constants.ITEM_NONE) {
+                AudioSystem.getInstance().playInteract();
                 player.setItemState(Constants.ITEM_NONE);
                 hud.addMoney(-10); // Penalty
             }
@@ -93,6 +99,7 @@ public class LobbyScene extends Scene {
         if (!gameStarted && player.getBounds().intersects(startTrigger)) {
             hud.setInteractMessage("Press E to start Day 1");
             if (input.isEJustPressed()) {
+                AudioSystem.getInstance().playInteract();
                 gameStarted = true;
                 sceneManager.switchScene(Constants.SCENE_BUFFER);
             }
@@ -100,7 +107,6 @@ public class LobbyScene extends Scene {
     }
 
     private void checkInteractables() {
-        Rectangle playerBounds = player.getBounds();
         Rectangle interactionArea = new Rectangle(
                 player.getX() - 20, player.getY() - 20,
                 Constants.PLAYER_WIDTH + 40, Constants.PLAYER_HEIGHT + 40
@@ -177,17 +183,10 @@ public class LobbyScene extends Scene {
 
     @Override
     public void render(Graphics2D g) {
-        // Draw background
-        g.setColor(new Color(180, 180, 200));
-        g.fillRect(0, 0, Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT);
-
+        // Draw background image
         if (backgroundImage != null) {
             g.drawImage(backgroundImage, 0, 0, Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT, null);
         }
-
-        // Draw floor
-        g.setColor(new Color(100, 100, 120));
-        g.fillRect(0, Constants.WINDOW_HEIGHT - 100, Constants.WINDOW_WIDTH, 100);
 
         // Draw machines
         popcornMachine.render(g);
