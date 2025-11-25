@@ -56,6 +56,7 @@ public class LobbyScene extends Scene {
 
     @Override
     public void update(long deltaTime, InputHandler input) {
+        System.out.println(player.getX() + " " + player.getY());
         // Update player
         int oldX = player.getX();
         int oldY = player.getY();
@@ -98,7 +99,7 @@ public class LobbyScene extends Scene {
         // Check start trigger
         if (!gameStarted && player.getBounds().intersects(startTrigger)) {
             hud.setInteractMessage("Press E to start Day 1");
-            if (input.isEJustPressed()) {
+            if (input.isEPressed()) {
                 AudioSystem.getInstance().playInteract();
                 gameStarted = true;
                 sceneManager.switchScene(Constants.SCENE_BUFFER);

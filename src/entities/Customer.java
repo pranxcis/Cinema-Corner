@@ -10,8 +10,8 @@ import java.util.Random;
 public class Customer {
     private int x, y;
     private int targetX, targetY;
-    private int width = 48;
-    private int height = 64;
+    private int width = 70;
+    private int height = 70;
     private int speed = 2;
 
     private int customerType; // 1, 2, or 3
@@ -19,6 +19,7 @@ public class Customer {
     private int[] order; // Array of items needed
     private long waitTimer = 0;
     private boolean isAngry = false;
+    private boolean hasPlayedArrivalSound = false; // Track if sound already played
 
     private BufferedImage sprite;
     private String currentDirection = "idle";
@@ -69,6 +70,8 @@ public class Customer {
         }
 
         // Move toward target
+        boolean wasMoving = (x != targetX || y != targetY);
+
         if (x < targetX) {
             x += speed;
             if (x > targetX) x = targetX;
@@ -84,11 +87,26 @@ public class Customer {
             y -= speed;
             if (y < targetY) y = targetY;
         }
+
+        // Play sound when reaching counter for the first time
+        if (wasMoving && hasReachedTarget() && state == Constants.CUSTOMER_WAITING && !hasPlayedArrivalSound) {
+            systems.AudioSystem.getInstance().playCustomerArrive();
+            hasPlayedArrivalSound = true;
+        }
     }
 
     public void render(Graphics2D g) {
+        // Draw customer sprite
         if (sprite != null) {
             g.drawImage(sprite, x, y, width, height, null);
+        } else {
+            // Fallback if sprite fails to load - draw colored rectangle
+            Color customerColor = new Color(255, 180, 200);
+            g.setColor(customerColor);
+            g.fillRect(x, y, width, height);
+            g.setColor(Color.BLACK);
+            g.drawRect(x, y, width, height);
+            g.drawString("C" + customerType, x + 15, y + 35);
         }
 
         // Draw order bubble

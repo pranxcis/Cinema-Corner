@@ -57,6 +57,10 @@ public class Gameplay1 extends Scene {
         // Initialize HUD
         hud = new HUD();
         hud.setDay(1);
+
+        // Play day start sound and music
+        systems.AudioSystem.getInstance().playDayStart();
+        systems.AudioSystem.getInstance().playGameplay1Music();
     }
 
     @Override
@@ -74,12 +78,14 @@ public class Gameplay1 extends Scene {
         // Check if day failed
         if (customerSystem.isDayFailed()) {
             // Reset to Day 1
+            systems.AudioSystem.getInstance().playGameIncomplete();
             sceneManager.switchScene(Constants.SCENE_GAMEPLAY);
             return;
         }
 
         // Check if day complete
         if (customerSystem.isDayComplete()) {
+            systems.AudioSystem.getInstance().playDayClear();
             sceneManager.switchScene(Constants.SCENE_BUFFER);
             return;
         }
@@ -112,11 +118,13 @@ public class Gameplay1 extends Scene {
 
         // Handle interactions
         if (input.isEJustPressed()) {
+            systems.AudioSystem.getInstance().playInteract();
             handleInteractions();
         }
 
         // Handle trash
         if (input.isTJustPressed() && player.getItemState() != Constants.ITEM_NONE) {
+            systems.AudioSystem.getInstance().playInteract();
             player.setItemState(Constants.ITEM_NONE);
             scoringSystem.addTrashedItem();
         }
@@ -264,5 +272,8 @@ public class Gameplay1 extends Scene {
         g.setFont(new Font("Arial", Font.BOLD, 16));
         String progress = "Served: " + customerSystem.getCustomersServed() + "/" + dayConfig.getGoalCustomers();
         g.drawString(progress, Constants.WINDOW_WIDTH - 150, 80);
+
+        // Debug: Show active customers
+        g.drawString("Active Customers: " + customerSystem.getCustomers().size(), Constants.WINDOW_WIDTH - 150, 100);
     }
 }

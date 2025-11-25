@@ -37,6 +37,7 @@ public class CustomerSystem {
         if (spawnTimer >= spawnInterval && customers.size() < 3) {
             spawnCustomer();
             spawnTimer = 0;
+            System.out.println("Customer spawned! Total customers: " + customers.size());
         }
 
         // Update all customers
@@ -48,9 +49,11 @@ public class CustomerSystem {
             if (customer.getState() == Constants.CUSTOMER_ANGRY) {
                 angryCustomers++;
                 customers.remove(i);
+                System.out.println("Customer left angry! Angry count: " + angryCustomers);
             } else if (customer.getState() == Constants.CUSTOMER_LEAVING &&
                     customer.hasReachedTarget()) {
                 customers.remove(i);
+                System.out.println("Customer left satisfied! Served: " + customersServed);
             }
         }
     }
@@ -67,6 +70,8 @@ public class CustomerSystem {
         customer.setState(Constants.CUSTOMER_WAITING);
 
         customers.add(customer);
+
+        System.out.println("Spawned customer type " + customerType + " at (" + spawn.x + ", " + spawn.y + ") heading to (" + counterPos.x + ", " + counterPos.y + ")");
     }
 
     public Customer getFirstWaitingCustomer() {

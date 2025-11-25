@@ -6,8 +6,8 @@ public class GameConfig {
 
     // Money settings
     public static final int MONEY_PER_CORRECT_ORDER = 50;
-    public static final int MONEY_PENALTY_WRONG = -20;
-    public static final int MONEY_PENALTY_ANGRY = -30;
+    public static final int MONEY_PENALTY_WRONG = -10;
+    public static final int MONEY_PENALTY_ANGRY = -10;
     public static final int MONEY_PENALTY_TRASH = -10;
 
     // Customer settings

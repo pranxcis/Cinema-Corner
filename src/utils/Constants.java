@@ -7,12 +7,12 @@ public class Constants {
 
     // Game settings
     public static final int TARGET_FPS = 60;
-    public static final long FRAME_TIME = 1000 / TARGET_FPS;
+    public static final long FRAME_TIME = 2000 / TARGET_FPS;
 
     // Player settings
-    public static final int PLAYER_WIDTH = 120;
-    public static final int PLAYER_HEIGHT = 120;
-    public static final int PLAYER_SPEED = 3;
+    public static final int PLAYER_WIDTH = 110;
+    public static final int PLAYER_HEIGHT = 110;
+    public static final int PLAYER_SPEED = 5;
 
     // Machine settings
     public static final int MACHINE_WIDTH = 100;

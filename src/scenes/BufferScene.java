@@ -23,18 +23,29 @@ public class BufferScene extends Scene {
         fadingIn = true;
         displayTimer = 0;
 
-        // Determine next scene based on current scene
-        String current = sceneManager.getCurrentSceneName();
-        if (current.equals(Constants.SCENE_LOBBY) || current.equals(Constants.SCENE_MENU)) {
+        // Determine next scene based on PREVIOUS scene (before buffer)
+        String previous = sceneManager.getPreviousSceneName();
+        System.out.println("BufferScene - Previous scene was: " + previous);
+
+        if (previous.equals(Constants.SCENE_LOBBY)) {
             nextScene = Constants.SCENE_GAMEPLAY;
-        } else if (current.equals(Constants.SCENE_GAMEPLAY)) {
-            nextScene = "gameplay2";
-        } else if (current.equals("gameplay2")) {
-            nextScene = "gameplay3";
-        } else if (current.equals("gameplay3")) {
-            nextScene = "end";
-        } else {
+            System.out.println("BufferScene -> Gameplay1 (Day 1)");
+        } else if (previous.equals(Constants.SCENE_MENU)) {
             nextScene = Constants.SCENE_LOBBY;
+            System.out.println("BufferScene -> Lobby");
+        } else if (previous.equals(Constants.SCENE_GAMEPLAY)) {
+            nextScene = "gameplay2";
+            System.out.println("BufferScene -> Gameplay2 (Day 2)");
+        } else if (previous.equals("gameplay2")) {
+            nextScene = "gameplay3";
+            System.out.println("BufferScene -> Gameplay3 (Day 3)");
+        } else if (previous.equals("gameplay3")) {
+            nextScene = "end";
+            System.out.println("BufferScene -> EndScene");
+        } else {
+            // Default fallback
+            nextScene = Constants.SCENE_GAMEPLAY;
+            System.out.println("BufferScene -> Default to Gameplay1");
         }
     }
 
@@ -74,5 +85,9 @@ public class BufferScene extends Scene {
 
         g.setComposite(oldComposite);
 
+        // Draw loading text
+        g.setColor(new Color(255, 255, 255, alpha));
+        g.setFont(AssetLoader.getFont("default"));
+        g.drawString("Loading...", Constants.WINDOW_WIDTH / 2 - 50, Constants.WINDOW_HEIGHT - 50);
     }
 }
