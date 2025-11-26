@@ -2,7 +2,6 @@ package systems;
 
 import javax.sound.sampled.*;
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,20 +34,20 @@ public class AudioSystem {
     }
 
     // ---------------------------------------------------------
-    // LOAD AUDIO FILES
+    // LOAD AUDIO FILES (WAV ONLY)
     // ---------------------------------------------------------
     private void loadAllAudio() {
-        loadSound("interact", "sounds/Interact.mp3");
-        loadSound("machine_complete", "sounds/MachineComplete.mp3");
-        loadSound("printing", "sounds/Printing.mp3");
-        loadSound("cooking", "sounds/Cooking.mp3");
-        loadSound("filling", "sounds/Filling.mp3");
-        loadSound("customer", "sounds/Customer.mp3");
-        loadSound("day_clear", "sounds/DayClear.mp3");
-        loadSound("day_start", "sounds/DayStart.mp3");
-        loadSound("intro", "sounds/IntroScene.mp3");
-        loadSound("game_incomplete", "sounds/GameIncomplete.mp3");
-        loadSound("game_complete", "sounds/GameComplete.mp3");
+        loadSound("interact", "sounds/Interact.wav");
+        loadSound("machine_complete", "sounds/MachineComplete.wav");
+        loadSound("printing", "sounds/Printing.wav");
+        loadSound("cooking", "sounds/Cooking.wav");
+        loadSound("filling", "sounds/Filling.wav");
+        loadSound("customer", "sounds/Customer.wav");
+        loadSound("day_clear", "sounds/DayClear.wav");
+        loadSound("day_start", "sounds/DayStart.wav");
+        loadSound("intro", "sounds/IntroScene.wav");
+        loadSound("game_incomplete", "sounds/GameIncomplete.wav");
+        loadSound("game_complete", "sounds/GameComplete.wav");
     }
 
     private void loadSound(String name, String path) {
@@ -106,7 +105,7 @@ public class AudioSystem {
     }
 
     // ---------------------------------------------------------
-    // MUSIC
+    // MUSIC (WAV ONLY)
     // ---------------------------------------------------------
     public void playMusic(String musicName) {
         if (!musicEnabled) return;
@@ -119,7 +118,7 @@ public class AudioSystem {
         stopMusic();
 
         try {
-            File musicFile = new File("assets/music/" + musicName + ".mp3");
+            File musicFile = new File("assets/music/" + musicName + ".wav");
             if (!musicFile.exists()) {
                 System.out.println("Music not found: " + musicName);
                 return;

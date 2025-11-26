@@ -36,6 +36,7 @@ public class EndScene extends Scene {
 
     @Override
     public void init() {
+        AudioSystem.getInstance().playGameComplete();
         backgroundImage = AssetLoader.loadImage("images/EndScene.png");
 
         // Player starts here

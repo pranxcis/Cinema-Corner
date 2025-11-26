@@ -1,6 +1,7 @@
 package entities;
 
 import core.AssetLoader;
+import systems.AudioSystem;
 import utils.Constants;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -23,6 +24,7 @@ public class TicketMachine {
 
     public void update(long deltaTime) {
         if (isPrinting) {
+            AudioSystem.getInstance().startPrinting();
             printTimer += deltaTime;
 
             if (printTimer < 500) {
@@ -33,6 +35,8 @@ public class TicketMachine {
                 state = Constants.MACHINE_FULL;
                 isPrinting = false;
                 printTimer = 0;
+                AudioSystem.getInstance().playMachineComplete();
+                AudioSystem.getInstance().stopPrinting();
             }
             updateSprite();
         }

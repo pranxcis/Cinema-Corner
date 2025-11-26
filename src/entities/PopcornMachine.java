@@ -1,6 +1,7 @@
 package entities;
 
 import core.AssetLoader;
+import systems.AudioSystem;
 import utils.Constants;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -23,6 +24,7 @@ public class PopcornMachine {
 
     public void update(long deltaTime) {
         if (isRefilling) {
+            AudioSystem.getInstance().startCooking();
             refillTimer += deltaTime;
 
             if (refillTimer < 500) {
@@ -33,6 +35,8 @@ public class PopcornMachine {
                 state = Constants.MACHINE_FULL;
                 isRefilling = false;
                 refillTimer = 0;
+                AudioSystem.getInstance().playMachineComplete();
+                AudioSystem.getInstance().stopCooking();
             }
             updateSprite();
         }

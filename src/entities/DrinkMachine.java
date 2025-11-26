@@ -1,5 +1,6 @@
 package entities;
 
+import systems.AudioSystem;
 import core.AssetLoader;
 import utils.Constants;
 import java.awt.*;
@@ -23,6 +24,7 @@ public class DrinkMachine {
 
     public void update(long deltaTime) {
         if (isRefilling) {
+            AudioSystem.getInstance().startFilling();
             refillTimer += deltaTime;
 
             if (refillTimer < 500) {
@@ -33,6 +35,8 @@ public class DrinkMachine {
                 state = Constants.MACHINE_FULL;
                 isRefilling = false;
                 refillTimer = 0;
+                AudioSystem.getInstance().playMachineComplete();
+                AudioSystem.getInstance().stopFilling();
             }
             updateSprite();
         }
