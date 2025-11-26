@@ -32,9 +32,6 @@ public class HUD {
         // Draw controls (bottom-left)
         g.setFont(smallFont);
         g.setColor(Color.WHITE);
-        g.drawString("W A S D to move", 20, Constants.WINDOW_HEIGHT - 60);
-        g.drawString("E to interact", 20, Constants.WINDOW_HEIGHT - 40);
-        g.drawString("T to trash", 20, Constants.WINDOW_HEIGHT - 20);
 
         // Draw day and money (top-left)
         g.setFont(mediumFont);

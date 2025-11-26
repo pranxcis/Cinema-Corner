@@ -3,23 +3,29 @@ package entities;
 import core.AssetLoader;
 import utils.Constants;
 import config.GameConfig;
+import config.SpawnConfig;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class Customer {
     private int x, y;
     private int targetX, targetY;
-    private int width = 70;
-    private int height = 70;
+    private int width = 48;
+    private int height = 64;
     private int speed = 2;
 
     private int customerType; // 1, 2, or 3
     private int state = Constants.CUSTOMER_WAITING;
-    private int[] order; // Array of items needed
+    private List<Integer> order; // List of items needed (can be multiple)
+    private List<Integer> receivedItems; // Track what player has given
     private long waitTimer = 0;
     private boolean isAngry = false;
-    private boolean hasPlayedArrivalSound = false; // Track if sound already played
+    private boolean hasPlayedArrivalSound = false;
+    private boolean isAtCounter = false; // Track if at assigned counter
+    private boolean isAtCounter1 = false; // Track if at Counter 1 specifically
 
     private BufferedImage sprite;
     private String currentDirection = "idle";
@@ -30,6 +36,7 @@ public class Customer {
         this.targetX = x;
         this.targetY = y;
         this.customerType = customerType;
+        this.receivedItems = new ArrayList<>();
 
         generateRandomOrder();
         loadSprite();
@@ -37,16 +44,36 @@ public class Customer {
 
     private void generateRandomOrder() {
         Random rand = new Random();
+        order = new ArrayList<>();
         int orderType = rand.nextInt(7); // 7 possible combinations
 
         switch (orderType) {
-            case 0: order = new int[]{Constants.ITEM_POPCORN}; break;
-            case 1: order = new int[]{Constants.ITEM_DRINK}; break;
-            case 2: order = new int[]{Constants.ITEM_TICKET}; break;
-            case 3: order = new int[]{Constants.ITEM_POPCORN, Constants.ITEM_DRINK}; break;
-            case 4: order = new int[]{Constants.ITEM_POPCORN, Constants.ITEM_TICKET}; break;
-            case 5: order = new int[]{Constants.ITEM_DRINK, Constants.ITEM_TICKET}; break;
-            case 6: order = new int[]{Constants.ITEM_POPCORN, Constants.ITEM_DRINK, Constants.ITEM_TICKET}; break;
+            case 0:
+                order.add(Constants.ITEM_POPCORN);
+                break;
+            case 1:
+                order.add(Constants.ITEM_DRINK);
+                break;
+            case 2:
+                order.add(Constants.ITEM_TICKET);
+                break;
+            case 3:
+                order.add(Constants.ITEM_POPCORN);
+                order.add(Constants.ITEM_DRINK);
+                break;
+            case 4:
+                order.add(Constants.ITEM_POPCORN);
+                order.add(Constants.ITEM_TICKET);
+                break;
+            case 5:
+                order.add(Constants.ITEM_DRINK);
+                order.add(Constants.ITEM_TICKET);
+                break;
+            case 6:
+                order.add(Constants.ITEM_POPCORN);
+                order.add(Constants.ITEM_DRINK);
+                order.add(Constants.ITEM_TICKET);
+                break;
         }
     }
 
@@ -56,19 +83,6 @@ public class Customer {
     }
 
     public void update(long deltaTime) {
-        // Update wait timer
-        if (state == Constants.CUSTOMER_WAITING) {
-            waitTimer += deltaTime;
-
-            if (waitTimer > GameConfig.CUSTOMER_PATIENCE_WARNING && !isAngry) {
-                isAngry = true;
-            }
-
-            if (waitTimer > GameConfig.CUSTOMER_WAIT_TIME) {
-                state = Constants.CUSTOMER_ANGRY;
-            }
-        }
-
         // Move toward target
         boolean wasMoving = (x != targetX || y != targetY);
 
@@ -88,10 +102,34 @@ public class Customer {
             if (y < targetY) y = targetY;
         }
 
-        // Play sound when reaching counter for the first time
-        if (wasMoving && hasReachedTarget() && state == Constants.CUSTOMER_WAITING && !hasPlayedArrivalSound) {
-            systems.AudioSystem.getInstance().playCustomerArrive();
-            hasPlayedArrivalSound = true;
+        // Check if reached counter
+        if (hasReachedTarget() && !isAtCounter) {
+            isAtCounter = true;
+
+            // Check if at Counter 1 specifically
+            Point counter1 = SpawnConfig.COUNTER_POS_1;
+            if (targetX == counter1.x && targetY == counter1.y) {
+                isAtCounter1 = true;
+            }
+
+            // Play arrival sound
+            if (!hasPlayedArrivalSound) {
+                systems.AudioSystem.getInstance().playCustomerArrive();
+                hasPlayedArrivalSound = true;
+            }
+        }
+
+        // Update satisfaction timer ONLY if at Counter 1
+        if (state == Constants.CUSTOMER_WAITING && isAtCounter1) {
+            waitTimer += deltaTime;
+
+            if (waitTimer > GameConfig.CUSTOMER_PATIENCE_WARNING && !isAngry) {
+                isAngry = true;
+            }
+
+            if (waitTimer > GameConfig.CUSTOMER_WAIT_TIME) {
+                state = Constants.CUSTOMER_ANGRY;
+            }
         }
     }
 
@@ -100,7 +138,7 @@ public class Customer {
         if (sprite != null) {
             g.drawImage(sprite, x, y, width, height, null);
         } else {
-            // Fallback if sprite fails to load - draw colored rectangle
+            // Fallback if sprite fails to load
             Color customerColor = new Color(255, 180, 200);
             g.setColor(customerColor);
             g.fillRect(x, y, width, height);
@@ -149,27 +187,31 @@ public class Customer {
         return sb.toString().trim();
     }
 
-    public boolean checkOrder(int playerItem) {
-        // Check if player's item matches the order
-        if (order.length == 1) {
-            return order[0] == playerItem;
-        } else if (order.length == 2) {
-            // For 2 items, check if it's the BOTH state or individual matches
-            if (order[0] == Constants.ITEM_POPCORN && order[1] == Constants.ITEM_DRINK) {
-                return playerItem == Constants.ITEM_BOTH;
-            }
-            // Otherwise check individual items
-            return playerItem == order[0] || playerItem == order[1];
-        } else if (order.length == 3) {
-            // All 3 items - player needs BOTH for popcorn+drink, then ticket separately
-            return playerItem == Constants.ITEM_BOTH || playerItem == Constants.ITEM_TICKET;
+    // Give item to customer, returns true if item was needed
+    public boolean giveItem(int playerItem) {
+        // Check if this item is in the order and not yet received
+        if (order.contains(playerItem) && !receivedItems.contains(playerItem)) {
+            receivedItems.add(playerItem);
+            return true;
         }
         return false;
+    }
+
+    // Check if all items in order have been received
+    public boolean isOrderComplete() {
+        // Check if received items contains all order items
+        for (int item : order) {
+            if (!receivedItems.contains(item)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public void setTarget(int x, int y) {
         this.targetX = x;
         this.targetY = y;
+        this.isAtCounter = false; // Reset when given new target
     }
 
     public boolean hasReachedTarget() {
@@ -185,7 +227,8 @@ public class Customer {
     public int getY() { return y; }
     public int getState() { return state; }
     public void setState(int state) { this.state = state; }
-    public int[] getOrder() { return order; }
+    public List<Integer> getOrder() { return order; }
     public boolean isAngry() { return isAngry; }
     public int getCustomerType() { return customerType; }
+    public boolean isAtCounter1() { return isAtCounter1; }
 }

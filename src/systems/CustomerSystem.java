@@ -50,10 +50,25 @@ public class CustomerSystem {
                 angryCustomers++;
                 customers.remove(i);
                 System.out.println("Customer left angry! Angry count: " + angryCustomers);
+                // Move queue up
+                updateQueuePositions();
             } else if (customer.getState() == Constants.CUSTOMER_LEAVING &&
                     customer.hasReachedTarget()) {
                 customers.remove(i);
                 System.out.println("Customer left satisfied! Served: " + customersServed);
+                // Move queue up
+                updateQueuePositions();
+            }
+        }
+    }
+
+    private void updateQueuePositions() {
+        // Reassign counter positions to remaining customers
+        for (int i = 0; i < customers.size(); i++) {
+            Customer customer = customers.get(i);
+            if (customer.getState() == Constants.CUSTOMER_WAITING) {
+                Point counterPos = SpawnConfig.getCounterPosition(i);
+                customer.setTarget(counterPos.x, counterPos.y);
             }
         }
     }
@@ -75,9 +90,11 @@ public class CustomerSystem {
     }
 
     public Customer getFirstWaitingCustomer() {
+        // Return customer at Counter 1 only
         for (Customer customer : customers) {
             if (customer.getState() == Constants.CUSTOMER_WAITING &&
-                    customer.hasReachedTarget()) {
+                    customer.hasReachedTarget() &&
+                    customer.isAtCounter1()) {
                 return customer;
             }
         }

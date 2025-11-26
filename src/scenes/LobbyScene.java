@@ -20,6 +20,7 @@ public class LobbyScene extends Scene {
 
     private Rectangle startTrigger;
     private boolean gameStarted = false;
+    private static int currentDay = 1; // Track current day
 
     public LobbyScene(SceneManager sceneManager) {
         super(sceneManager);
@@ -32,11 +33,11 @@ public class LobbyScene extends Scene {
         // Initialize player
         player = new Player(100, 400);
 
-        // Initialize machines
-        popcornMachine = new PopcornMachine(200, 200);
-        drinkMachine = new DrinkMachine(400, 200);
-        ticketMachine = new TicketMachine(600, 200);
-        trash = new Trash(50, 300);
+        // Initialize machines at exact positions
+        popcornMachine = new PopcornMachine(580, 220);
+        drinkMachine = new DrinkMachine(760, 200);
+        ticketMachine = new TicketMachine(930, 220);
+        trash = new Trash(1130, 320);
 
         // Set machines to ready state
         popcornMachine.setState(Constants.MACHINE_FULL);
@@ -45,17 +46,23 @@ public class LobbyScene extends Scene {
 
         // HUD
         hud = new HUD();
-        hud.setDay(1);
+        hud.setDay(currentDay);
 
-        // Start trigger (specific area on map)
-        startTrigger = new Rectangle(650, 400, 100, 100);
+        // Start trigger at exact position
+        startTrigger = new Rectangle(200, 400, 70, 70);
+
+        // Reset game started flag
+        gameStarted = false;
 
         // Play lobby music
         AudioSystem.getInstance().playLobbyMusic();
+
+        System.out.println("LobbyScene initialized for Day " + currentDay);
     }
 
     @Override
     public void update(long deltaTime, InputHandler input) {
+
         System.out.println(player.getX() + " " + player.getY());
         // Update player
         int oldX = player.getX();
@@ -63,10 +70,8 @@ public class LobbyScene extends Scene {
 
         player.update(deltaTime, input);
 
-        // Check collisions with machines and walls
-        if (CollisionUtil.checkMachineCollision(player, popcornMachine) ||
-                CollisionUtil.checkMachineCollision(player, drinkMachine) ||
-                CollisionUtil.checkMachineCollision(player, ticketMachine) ||
+        // Check collisions with machines, walls, and boundaries
+        if (CollisionUtil.checkWallCollision(player) ||
                 !CollisionUtil.isWithinBounds(player, Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT)) {
             player.setX(oldX);
             player.setY(oldY);
@@ -79,10 +84,11 @@ public class LobbyScene extends Scene {
 
         // Update HUD
         hud.setHeldItem(player.getItemState());
+        hud.setDay(currentDay);
         checkInteractables();
 
         // Check for interactions
-        if (input.isEJustPressed()) {
+        if (input.isEPressed()) {
             AudioSystem.getInstance().playInteract();
             handleInteractions();
         }
@@ -98,7 +104,7 @@ public class LobbyScene extends Scene {
 
         // Check start trigger
         if (!gameStarted && player.getBounds().intersects(startTrigger)) {
-            hud.setInteractMessage("Press E to start Day 1");
+            hud.setInteractMessage("Press E to start Day " + currentDay);
             if (input.isEPressed()) {
                 AudioSystem.getInstance().playInteract();
                 gameStarted = true;
@@ -109,8 +115,8 @@ public class LobbyScene extends Scene {
 
     private void checkInteractables() {
         Rectangle interactionArea = new Rectangle(
-                player.getX() - 20, player.getY() - 20,
-                Constants.PLAYER_WIDTH + 40, Constants.PLAYER_HEIGHT + 40
+                player.getX() - 10, player.getY() - 10,
+                Constants.PLAYER_WIDTH + 20, Constants.PLAYER_HEIGHT + 20
         );
 
         boolean nearSomething = false;
@@ -137,8 +143,8 @@ public class LobbyScene extends Scene {
 
     private void handleInteractions() {
         Rectangle interactionArea = new Rectangle(
-                player.getX() - 20, player.getY() - 20,
-                Constants.PLAYER_WIDTH + 40, Constants.PLAYER_HEIGHT + 40
+                player.getX() - 10, player.getY() - 10,
+                Constants.PLAYER_WIDTH + 20, Constants.PLAYER_HEIGHT + 20
         );
 
         // Check popcorn machine
@@ -182,6 +188,17 @@ public class LobbyScene extends Scene {
         }
     }
 
+    // Static method to set the current day
+    public static void setCurrentDay(int day) {
+        currentDay = day;
+        System.out.println("LobbyScene - Day set to: " + day);
+    }
+
+    // Static method to get current day
+    public static int getCurrentDay() {
+        return currentDay;
+    }
+
     @Override
     public void render(Graphics2D g) {
         // Draw background image
@@ -195,11 +212,12 @@ public class LobbyScene extends Scene {
         ticketMachine.render(g);
         trash.render(g);
 
-        // Draw start trigger
-        g.setColor(new Color(0, 255, 0, 100));
-        g.fillRect(startTrigger.x, startTrigger.y, startTrigger.width, startTrigger.height);
+        //Draw Oval
+        g.setColor(new Color(255, 0, 0, 100)); // RED with alpha
+        g.fillOval(startTrigger.x, startTrigger.y, startTrigger.width, startTrigger.height);
         g.setColor(Color.WHITE);
-        g.drawString("START", startTrigger.x + 25, startTrigger.y + 55);
+        g.setFont(new Font("Arial", Font.BOLD, 13));
+        g.drawString("Start Day " + currentDay, startTrigger.x, startTrigger.y - 10);
 
         // Draw player
         player.render(g);

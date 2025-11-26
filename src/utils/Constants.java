@@ -12,17 +12,17 @@ public class Constants {
     // Player settings
     public static final int PLAYER_WIDTH = 110;
     public static final int PLAYER_HEIGHT = 110;
-    public static final int PLAYER_SPEED = 5;
+    public static final int PLAYER_SPEED = 10;
 
     // Machine settings
-    public static final int MACHINE_WIDTH = 100;
-    public static final int MACHINE_HEIGHT = 120;
+    public static final int MACHINE_WIDTH = 200;
+    public static final int MACHINE_HEIGHT = 200;
 
     // Animation settings
     public static final int ANIMATION_SPEED = 100; // milliseconds per frame
 
     // Fade settings
-    public static final int FADE_SPEED = 3;
+    public static final int FADE_SPEED = 4;
     public static final int INTRO_DISPLAY_TIME = 2000; // 2 seconds
 
     // Scene types

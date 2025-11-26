@@ -44,13 +44,13 @@ public class PopcornMachine {
         }
 
         // Draw label
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.PLAIN, 14));
-        g.drawString("Popcorn", x + 10, y - 5);
+        //g.setColor(Color.WHITE);
+        //g.setFont(new Font("Arial", Font.PLAIN, 14));
+        //g.drawString("Popcorn", x + 10, y - 5);
 
         // Debug bounds
-        g.setColor(new Color(0, 255, 0, 100));
-        g.drawRect(x, y, width, height);
+        //g.setColor(new Color(0, 255, 0, 100));
+        //g.drawRect(x, y, width, height);
     }
 
     private void updateSprite() {

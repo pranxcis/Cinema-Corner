@@ -2,11 +2,14 @@ package scenes;
 
 import core.*;
 import entities.*;
-import systems.*;
+import systems.AudioSystem;
+import systems.CustomerSystem;
+import systems.ScoringSystem;
 import ui.HUD;
 import utils.Constants;
 import utils.CollisionUtil;
-import config.*;
+import config.DayConfig;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
@@ -31,19 +34,19 @@ public class Gameplay1 extends Scene {
 
     @Override
     public void init() {
-        backgroundImage = AssetLoader.loadImage("images/GameplayScene.png");
+        backgroundImage = AssetLoader.loadImage("images/Gameplay1.png");
 
         // Initialize day config
         dayConfig = new DayConfig(1);
 
         // Initialize player
-        player = new Player(100, 400);
+        player = new Player(40, 470);
 
-        // Initialize machines
-        popcornMachine = new PopcornMachine(200, 200);
-        drinkMachine = new DrinkMachine(400, 200);
-        ticketMachine = new TicketMachine(600, 200);
-        trash = new Trash(50, 300);
+        // Initialize machines at exact positions
+        popcornMachine = new PopcornMachine(580, 220);
+        drinkMachine = new DrinkMachine(760, 200);
+        ticketMachine = new TicketMachine(930, 220);
+        trash = new Trash(1130, 320);
 
         // Set machines to ready
         popcornMachine.setState(Constants.MACHINE_FULL);
@@ -57,74 +60,76 @@ public class Gameplay1 extends Scene {
         // Initialize HUD
         hud = new HUD();
         hud.setDay(1);
+        hud.setMoney(scoringSystem.getTotalMoney());
 
         // Play day start sound and music
-        systems.AudioSystem.getInstance().playDayStart();
-        systems.AudioSystem.getInstance().playGameplay1Music();
+        AudioSystem.getInstance().playDayStart();
+        AudioSystem.getInstance().playGameplay1Music();
+
+        System.out.println("Gameplay1 initialized for Day " + dayConfig.getDayNumber());
     }
 
     @Override
     public void update(long deltaTime, InputHandler input) {
-        // Check for pause
+        // Pause toggle
         if (input.isEscJustPressed()) {
             isPaused = !isPaused;
             hud.setPaused(isPaused);
         }
 
-        if (isPaused) {
-            return; // Don't update game when paused
-        }
+        if (isPaused) return;
 
-        // Check if day failed
+        // Day fail check
         if (customerSystem.isDayFailed()) {
-            // Reset to Day 1
-            systems.AudioSystem.getInstance().playGameIncomplete();
-            sceneManager.switchScene(Constants.SCENE_GAMEPLAY);
+            AudioSystem.getInstance().playGameIncomplete();
+            // return to buffer or menu - follow your scene flow
+            sceneManager.switchScene(Constants.SCENE_GAMEPLAY); // keep same scene (or change as needed)
             return;
         }
 
-        // Check if day complete
+        // Day complete check
         if (customerSystem.isDayComplete()) {
-            systems.AudioSystem.getInstance().playDayClear();
+            AudioSystem.getInstance().playDayClear();
             sceneManager.switchScene(Constants.SCENE_BUFFER);
             return;
         }
 
-        // Update player
+        // Update player with old position backup (machines DO NOT block movement in Option A)
         int oldX = player.getX();
         int oldY = player.getY();
 
         player.update(deltaTime, input);
 
-        // Check collisions
-        if (CollisionUtil.checkMachineCollision(player, popcornMachine) ||
-                CollisionUtil.checkMachineCollision(player, drinkMachine) ||
-                CollisionUtil.checkMachineCollision(player, ticketMachine) ||
+        // Only block movement on walls and out-of-bounds (same as LobbyScene)
+        if (CollisionUtil.checkWallCollision(player) ||
                 !CollisionUtil.isWithinBounds(player, Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT)) {
             player.setX(oldX);
             player.setY(oldY);
         }
 
-        // Update systems
+        // Update systems & machines
         customerSystem.update(deltaTime);
         popcornMachine.update(deltaTime);
         drinkMachine.update(deltaTime);
         ticketMachine.update(deltaTime);
 
-        // Update HUD
+        // Update HUD values
         hud.setHeldItem(player.getItemState());
         hud.setMoney(scoringSystem.getTotalMoney());
+        hud.setDay(dayConfig.getDayNumber());
+
+        // Interactable hints
         checkInteractables();
 
-        // Handle interactions
-        if (input.isEJustPressed()) {
-            systems.AudioSystem.getInstance().playInteract();
+        // Interactions (match LobbyScene behaviour: E pressed)
+        if (input.isEPressed()) {
+            AudioSystem.getInstance().playInteract();
             handleInteractions();
         }
 
-        // Handle trash
+        // Trash (T just pressed)
         if (input.isTJustPressed() && player.getItemState() != Constants.ITEM_NONE) {
-            systems.AudioSystem.getInstance().playInteract();
+            AudioSystem.getInstance().playInteract();
             player.setItemState(Constants.ITEM_NONE);
             scoringSystem.addTrashedItem();
         }
@@ -147,8 +152,10 @@ public class Gameplay1 extends Scene {
         } else if (interactionArea.intersects(ticketMachine.getBounds())) {
             hud.setInteractMessage("Press E for Ticket Machine");
             nearSomething = true;
+        } else if (interactionArea.intersects(trash.getBounds())) {
+            hud.setInteractMessage("Press T to trash item");
+            nearSomething = true;
         } else {
-            // Check customers
             Customer customer = customerSystem.getFirstWaitingCustomer();
             if (customer != null && interactionArea.intersects(customer.getBounds())) {
                 hud.setInteractMessage("Press E to serve customer");
@@ -168,19 +175,26 @@ public class Gameplay1 extends Scene {
                 Constants.PLAYER_WIDTH + 40, Constants.PLAYER_HEIGHT + 40
         );
 
-        // Check machines first
+        // Machines first (same logic as LobbyScene)
         if (interactionArea.intersects(popcornMachine.getBounds())) {
             handlePopcornMachine();
-        } else if (interactionArea.intersects(drinkMachine.getBounds())) {
+            return;
+        }
+
+        if (interactionArea.intersects(drinkMachine.getBounds())) {
             handleDrinkMachine();
-        } else if (interactionArea.intersects(ticketMachine.getBounds())) {
+            return;
+        }
+
+        if (interactionArea.intersects(ticketMachine.getBounds())) {
             handleTicketMachine();
-        } else {
-            // Check customer serving
-            Customer customer = customerSystem.getFirstWaitingCustomer();
-            if (customer != null && interactionArea.intersects(customer.getBounds())) {
-                handleCustomerServe(customer);
-            }
+            return;
+        }
+
+        // Serve customer if nearby
+        Customer customer = customerSystem.getFirstWaitingCustomer();
+        if (customer != null && interactionArea.intersects(customer.getBounds())) {
+            handleCustomerServe(customer);
         }
     }
 
@@ -228,37 +242,50 @@ public class Gameplay1 extends Scene {
             return; // Can't serve with nothing
         }
 
-        boolean correct = customer.checkOrder(playerItem);
+        // BOTH state gives both items
+        if (playerItem == Constants.ITEM_BOTH) {
+            customer.giveItem(Constants.ITEM_POPCORN);
+            customer.giveItem(Constants.ITEM_DRINK);
+        } else {
+            boolean accepted = customer.giveItem(playerItem);
+            if (!accepted) {
+                scoringSystem.addWrongServe();
+                return;
+            }
+        }
 
-        if (correct) {
+        // Clear player's item
+        player.setItemState(Constants.ITEM_NONE);
+
+        // If order complete, serve customer and score
+        if (customer.isOrderComplete()) {
             customerSystem.serveCustomer(customer, true);
             scoringSystem.addCorrectServe();
-            player.setItemState(Constants.ITEM_NONE);
-        } else {
-            scoringSystem.addWrongServe();
-            // Customer stays, player keeps item
+            // Optionally increment money here based on order — kept in ScoringSystem
         }
+        // If not complete, customer waits for remaining items
     }
 
     @Override
     public void render(Graphics2D g) {
-        // Background
+        // Background base color
         g.setColor(new Color(180, 180, 200));
         g.fillRect(0, 0, Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT);
 
+        // Background image if any
         if (backgroundImage != null) {
             g.drawImage(backgroundImage, 0, 0, Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT, null);
         }
 
-        // Machines
+        // Machines & trash
         popcornMachine.render(g);
         drinkMachine.render(g);
         ticketMachine.render(g);
         trash.render(g);
 
         // Customers
-        for (Customer customer : customerSystem.getCustomers()) {
-            customer.render(g);
+        for (Customer c : customerSystem.getCustomers()) {
+            c.render(g);
         }
 
         // Player
@@ -271,9 +298,6 @@ public class Gameplay1 extends Scene {
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, 16));
         String progress = "Served: " + customerSystem.getCustomersServed() + "/" + dayConfig.getGoalCustomers();
-        g.drawString(progress, Constants.WINDOW_WIDTH - 150, 80);
-
-        // Debug: Show active customers
-        g.drawString("Active Customers: " + customerSystem.getCustomers().size(), Constants.WINDOW_WIDTH - 150, 100);
+        g.drawString(progress, Constants.WINDOW_WIDTH - 180, 50);
     }
 }
