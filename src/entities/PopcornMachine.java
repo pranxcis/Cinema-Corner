@@ -24,7 +24,6 @@ public class PopcornMachine {
 
     public void update(long deltaTime) {
         if (isRefilling) {
-            AudioSystem.getInstance().startCooking();
             refillTimer += deltaTime;
 
             if (refillTimer < 500) {
@@ -35,8 +34,8 @@ public class PopcornMachine {
                 state = Constants.MACHINE_FULL;
                 isRefilling = false;
                 refillTimer = 0;
-                AudioSystem.getInstance().playMachineComplete();
                 AudioSystem.getInstance().stopCooking();
+                AudioSystem.getInstance().playMachineComplete();
             }
             updateSprite();
         }
@@ -99,6 +98,7 @@ public class PopcornMachine {
         if (state == Constants.MACHINE_EMPTY) {
             isRefilling = true;
             refillTimer = 0;
+            AudioSystem.getInstance().startCooking();
         }
     }
 

@@ -13,8 +13,8 @@ import java.util.Random;
 public class Customer {
     private int x, y;
     private int targetX, targetY;
-    private int width = 48;
-    private int height = 64;
+    private int width = 80;
+    private int height = 80;
     private int speed = 2;
 
     private int customerType; // 1, 2, or 3

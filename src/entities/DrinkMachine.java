@@ -24,7 +24,6 @@ public class DrinkMachine {
 
     public void update(long deltaTime) {
         if (isRefilling) {
-            AudioSystem.getInstance().startFilling();
             refillTimer += deltaTime;
 
             if (refillTimer < 500) {
@@ -35,8 +34,8 @@ public class DrinkMachine {
                 state = Constants.MACHINE_FULL;
                 isRefilling = false;
                 refillTimer = 0;
-                AudioSystem.getInstance().playMachineComplete();
                 AudioSystem.getInstance().stopFilling();
+                AudioSystem.getInstance().playMachineComplete();
             }
             updateSprite();
         }
@@ -99,6 +98,7 @@ public class DrinkMachine {
         if (state == Constants.MACHINE_EMPTY) {
             isRefilling = true;
             refillTimer = 0;
+            AudioSystem.getInstance().startFilling();
         }
     }
 

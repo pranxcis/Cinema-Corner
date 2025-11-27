@@ -6,7 +6,7 @@ public class Constants {
     public static final int WINDOW_HEIGHT = 960;
 
     // Game settings
-    public static final int TARGET_FPS = 60;
+    public static final int TARGET_FPS = 64;
     public static final long FRAME_TIME = 2000 / TARGET_FPS;
 
     // Player settings

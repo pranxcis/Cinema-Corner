@@ -24,7 +24,6 @@ public class TicketMachine {
 
     public void update(long deltaTime) {
         if (isPrinting) {
-            AudioSystem.getInstance().startPrinting();
             printTimer += deltaTime;
 
             if (printTimer < 500) {
@@ -35,8 +34,8 @@ public class TicketMachine {
                 state = Constants.MACHINE_FULL;
                 isPrinting = false;
                 printTimer = 0;
-                AudioSystem.getInstance().playMachineComplete();
                 AudioSystem.getInstance().stopPrinting();
+                AudioSystem.getInstance().playMachineComplete();
             }
             updateSprite();
         }
@@ -95,6 +94,7 @@ public class TicketMachine {
         if (state == Constants.MACHINE_EMPTY) {
             isPrinting = true;
             printTimer = 0;
+            AudioSystem.getInstance().startPrinting();
         }
     }
 
